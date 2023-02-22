@@ -23,7 +23,7 @@ import pandas as pd
 import seaborn as sns
 
 
-# ファイル読込
+# データロード
 iris = sns.load_dataset('iris')
 
 # データ加工

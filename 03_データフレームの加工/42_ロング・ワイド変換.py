@@ -31,13 +31,11 @@ iris = sns.load_dataset('iris')
 # - meltメソッドによるロング形式への変換はインデックスを使わずに行われる
 # - id_vars引数で残す列を指定する（リストで指定することも可能）
 
-# ロング形式に変換
-# --- 指定列以外は全て変換
-iris.melt(id_vars="species", var_name="Key", value_name="Value")
+# 特定列のみ残す
+iris.melt(id_vars="species", var_name="key", value_name="value")
 
-# ロング形式に変換
-# --- 特定列を残して変換
-iris.melt(id_vars=["species", "sepal_length"], var_name="Key", value_name="Value")
+# 複数列を残す
+iris.melt(id_vars=["species", "sepal_length"], var_name="key", value_name="value")
 
 
 # 2 ロング型に変換(stackメソッド) -----------------------------------------------------
@@ -54,7 +52,7 @@ iris.set_index(["species"]).stack()
 iris.set_index(["species"]) \
     .stack() \
     .reset_index() \
-    .set_axis(["species", "Key", "Value"], axis=1)
+    .set_axis(["species", "key", "value"], axis=1)
 
 
 # 3 ワイド型に変換(pivotメソッド) -------------------------------------------------
@@ -67,11 +65,11 @@ iris.set_index(["species"]) \
 # --- ワイド変換のため列番号を保持しておく（reset_index）
 iris_melt = iris \
     .reset_index() \
-    .melt(id_vars=["index", "species"], var_name="Key", value_name="Value")
+    .melt(id_vars=["index", "species"], var_name="key", value_name="value")
 
 # ワイドデータに変換
 iris_melt \
-    .pivot(index=["index", "species"], columns="Key", values="Value") \
+    .pivot(index=["index", "species"], columns="key", values="value") \
     .reset_index()
 
 

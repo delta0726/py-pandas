@@ -2,7 +2,7 @@
 Project   : Pandasのメモ
 Chapter   : 03 データフレームの加工
 Title     : 32 欠損値の補完
-Date      : 2023/02/25
+Date      : 2023/03/05
 """
 
 
@@ -63,14 +63,20 @@ iris_nan.assign(sepal_length=lambda x: x['sepal_length']
 # --- フロント・フィル
 # --- バック・フィル
 # --- 全ての欠損値を補完
+iris_nan.fillna(method='ffill')
+iris_nan.fillna(method='bfill')
+iris_nan.fillna(method='ffill').fillna(method='bfill')
+
+# 独自のメソッドも存在する
 iris_nan.ffill()
 iris_nan.bfill()
 iris_nan.ffill().bfill()
 
+# 特定列の補完
+iris_nan.fillna(method="ffill")
+
+
 # 列単位の補完
-# --- フロント・フィル
-# --- バック・フィル
-# --- 全ての欠損値を補完
 iris_nan.assign(sepal_length=lambda x: x['sepal_length'].ffill())
 iris_nan.assign(sepal_length=lambda x: x['sepal_length'].bfill())
 iris_nan.assign(sepal_length=lambda x: x['sepal_length'].ffill().bfill())

@@ -2,7 +2,7 @@
 Project   : Pandasのメモ
 Chapter   : 04 データフレームの集計
 Theme     : 21 グループ化
-Date      : 2023/02/24
+Date      : 2023/03/09
 """
 
 
@@ -10,7 +10,8 @@ Date      : 2023/02/24
 # 0 準備
 # 1 グループ化
 # 2 グループ化の解除
-# 3 グループ属性の確認
+# 3 gropubyの集計メソッド
+# 4 グループ属性の確認
 
 
 # 0 準備 ---------------------------------------------------------------------------
@@ -48,35 +49,43 @@ iris_grp.apply(lambda x: x.reset_index(drop=True))
 iris_grp.obj
 
 
-# 3 グループ属性の確認 ---------------------------------------------------------------
+# 3 gropubyの集計メソッド -----------------------------------------------------------
 
-# 準備：グループ化
-iris_grp = iris.groupby(['species'])
+# 集計
+iris.groupby(['species']).sum()
+iris.groupby(['species']).prod()
+iris.groupby(['species']).mean()
+iris.groupby(['species']).median()
+iris.groupby(['species']).std()
+iris.groupby(['species']).var()
+iris.groupby(['species']).sem()     # 標準誤差
+
+# データ取得
+iris.groupby(['species']).head()
+iris.groupby(['species']).tail()
+iris.groupby(['species']).first()
+iris.groupby(['species']).last()
+iris.groupby(['species']).nth(2)
+
+# カウント
+iris.groupby(['species']).count()
+iris.groupby(['species']).nunique()
+iris.groupby(['species']).size()
+
+
+# 4 グループ属性の確認 ---------------------------------------------------------------
 
 # グループ数
-iris_grp.ngroups
-
-# グループごとのレコード数
-# --- グループ別
-# --- 特定要素を抽出
-iris_grp.size()
-iris_grp.size()['versicolor']
-
-# グループ要素のカウント
-# --- 総数
-# --- ユニークレコード数
-iris_grp.count()
-iris_grp.nunique()
+iris.groupby(['species']).ngroups
 
 # データタイプ
-# ---グループ要素ごとのデータ型
-iris_grp.dtypes
+iris.groupby(['species']).dtypes
 
 # インデックス情報
 # --- グループごとのインデックスを辞書形式で取得
 # --- グループごとのインデックスをNumpyのArray形式で取得
-iris_grp.groups
-iris_grp.indices
+iris.groupby(['species']).groups
+iris.groupby(['species']).indices
 
 # グループキーの取得
-iris_grp.groups.keys()
+iris.groupby(['species']).groups.keys()

@@ -18,10 +18,15 @@ Date      : 2023/03/09
 
 # ライブラリ
 import pandas as pd
+import numpy as np
 import seaborn as sns
 
 # データロード
 iris = sns.load_dataset('iris')
+
+# データ加工
+# --- NaNを追加
+iris_na = iris.mask(np.random.random(iris.shape) < .3)
 
 
 # 1 グループ化 ---------------------------------------------------------------------
@@ -59,18 +64,51 @@ iris.groupby(['species']).median()
 iris.groupby(['species']).std()
 iris.groupby(['species']).var()
 iris.groupby(['species']).sem()     # 標準誤差
+iris.groupby(['species']).mad()     # 絶対中央偏差
+iris.groupby(['species']).skew()
 
-# データ取得
-iris.groupby(['species']).head()
-iris.groupby(['species']).tail()
-iris.groupby(['species']).first()
-iris.groupby(['species']).last()
-iris.groupby(['species']).nth([5, 10])
+# 統計量
+iris.groupby(['species']).describe()
+iris.groupby(['species']).corr()
+iris.groupby(['species']).cov()
+
+# 変換
+iris.groupby(['species']).rank()
+iris.groupby(['species']).shift(1)
+iris.groupby(['species']).diff()
+iris.groupby(['species']).pct_change()
+
+# 累積
+iris.groupby(['species']).cumsum()
+iris.groupby(['species']).cumprod()
+iris.groupby(['species']).cummax()
+iris.groupby(['species']).cummin()
+iris.groupby(['species']).cumcount()
 
 # カウント
 iris.groupby(['species']).count()
 iris.groupby(['species']).nunique()
 iris.groupby(['species']).size()
+
+# レコード抽出
+iris.groupby(['species']).head()
+iris.groupby(['species']).tail()
+iris.groupby(['species']).first()
+iris.groupby(['species']).last()
+iris.groupby(['species']).nth([5, 10])
+iris.groupby(['species']).nth([5, 10])
+iris.groupby(['species']).quantile(0.3)
+iris.groupby(['species']).sample(5)
+iris.groupby(['species']).sample(5)
+
+# グループ判定
+iris.groupby(['species']).all()
+iris.groupby(['species']).any()
+
+# 欠損値補完
+iris_na.groupby(['species']).ffill()
+iris_na.groupby(['species']).bfill()
+iris_na.groupby(['species']).backfill()
 
 
 # 4 グループ属性の確認 ---------------------------------------------------------------

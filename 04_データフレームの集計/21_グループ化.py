@@ -65,7 +65,7 @@ iris.groupby(['species']).head()
 iris.groupby(['species']).tail()
 iris.groupby(['species']).first()
 iris.groupby(['species']).last()
-iris.groupby(['species']).nth(2)
+iris.groupby(['species']).nth([5, 10])
 
 # カウント
 iris.groupby(['species']).count()

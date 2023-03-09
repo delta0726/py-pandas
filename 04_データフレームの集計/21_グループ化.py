@@ -99,7 +99,6 @@ iris.groupby(['species']).nth([5, 10])
 iris.groupby(['species']).nth([5, 10])
 iris.groupby(['species']).quantile(0.3)
 iris.groupby(['species']).sample(5)
-iris.groupby(['species']).sample(5)
 
 # グループ判定
 iris.groupby(['species']).all()

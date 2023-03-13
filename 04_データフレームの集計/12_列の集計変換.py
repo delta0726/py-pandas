@@ -2,17 +2,18 @@
 Project   : Pandasのメモ
 Chapter   : 04 データフレームの集計
 Theme     : 12 列の集計変換
-Date      : 2023/02/23
+Date      : 2023/03/14
 """
 
 
 # ＜目次＞
 # 0 準備
-# 1 全ての列を集計
-# 2 カテゴリカルデータの列をカウント
-# 3 パーセントランクに変換
-# 4 連続データの離散化
-# 5 列のデータ変換
+# 1 数値列のスケーリング
+# 2 数値列のZスコア変換
+# 3 数値列のZスコア変換
+# 4 数値列の順位変換
+# 5 数値列の分位変換
+# 6 行番号の追加
 
 
 # 0 準備 --------------------------------------------------------------------------
@@ -27,64 +28,131 @@ import seaborn as sns
 iris = sns.load_dataset('iris')
 
 
-# 3 パーセントランクに変換 ----------------------------------------------------
+# 1 数値列のスケーリング --------------------------------------------------------------
+
+# ライブラリ
+from sklearn import preprocessing
+
+
+# 関数定義
+def rescaling(x):
+    return (x - x.min()) / (x.max() - x.min())
+
+
+# 関数定義して適用
+iris.filter(['sepal_length'])\
+    .assign(rescaling=lambda x: rescaling(x))
+
+# ラムダ式で定義
+iris.filter(['sepal_length'])\
+    .assign(zscore=lambda x: (x - x.min()) / (x.max() - x.min()))
+
+# {sklearn}の関数を使用
+iris.filter(['sepal_length'])\
+    .assign(zscore=lambda x: preprocessing.minmax_scale(x))
+
+# {sklearn}のメソッドを使用
+mm = preprocessing.MinMaxScaler()
+iris.filter(['sepal_length'])\
+    .assign(zscore=lambda x: mm.fit_transform(x))
+
+
+# 2 数値列のZスコア変換 --------------------------------------------------------------
+
+# 関数定義
+def my_zscoer(x):
+    return (x - x.mean()) / x.std(dof=0)
+
+
+# 関数定義して適用
+iris.filter(['sepal_length'])\
+    .assign(zscore=lambda x: my_zscoer(x))
+
+# ラムダ式で定義
+iris.filter(['sepal_length'])\
+    .assign(zscore=lambda x: (x - x.mean()) / x.std())
+
+# {scipy]による定義
+import scipy.stats
+iris.filter(['sepal_length'])\
+    .assign(zscore=lambda x: scipy.stats.zscore(x))
+
+
+# 3 異常値の置換 -------------------------------------------------------------------
+
+# 準備：数値範囲の確認
+# --- 25% : 5.100000
+# --- 75% : 6.400000
+iris['sepal_length'].describe()
+
+# 異常値を固定値で指定
+iris.filter(['sepal_length'])\
+    .assign(clip=lambda x: x['sepal_length'].clip(lower=5.1, upper=6.4))
+
+# 異常値をパーセンタイルで指定
+iris.filter(['sepal_length'])\
+    .assign(clip=lambda x: x['sepal_length'].clip(lower=x['sepal_length'].quantile(0.25),
+                                                  upper=x['sepal_length'].quantile(0.75)))
+
+
+# 3 数値列のZスコア変換 --------------------------------------------------------------------
+
+# 関数定義
+def my_zscoer(x):
+    return (x - x.mean()) / x.std(dof=0)
+
+
+# 関数定義して適用
+iris.filter(['sepal_length'])\
+    .assign(zscore=lambda x: my_zscoer(x))
+
+# ラムダ式で定義
+iris.filter(['sepal_length'])\
+    .assign(zscore=lambda x: (x - x.mean()) / x.std())
+
+# {scipy]による定義
+import scipy.stats
+iris.filter(['sepal_length'])\
+    .assign(zscore=lambda x: scipy.stats.zscore(x))
+
+
+# 4 数値列の順位変換 --------------------------------------------------------------------
 
 # ＜ポイント＞
-#
+# - ｢method｣や｢na_options｣などの引数があって、細かいコントロールをすることも可能
 
-# シリーズ
-iris['sepal_length'].rank(pct=True)
+# 順位
+iris.assign(pct_rank=lambda x: x['sepal_length'].rank())
 
-# データフレーム
-iris[['sepal_length']]\
-    .assign(Pct_Rank=lambda x: x['sepal_length'].rank(pct=True))\
-    .sort_values(by='sepal_length', ascending=True)
+# パーセントランク
+iris.assign(pct_rank=lambda x: x['sepal_length'].rank(pct=True))
 
 
-# ＜参考：Rankメソッド＞
+# 5 数値列の分位変換 --------------------------------------------------------------------
 
-# データフレーム作成
-df = pd.DataFrame(data={'Animal': ['cat', 'penguin', 'dog', 'spider', 'snake'],
-                        'legs': [4, 2, 4, 8, np.nan]})
-
-# さまざまな順位
-# --- デフォルトの順位計算方法はaverageになっている（一般的にmaxの方がイメージと合うか？）
-# --- na_option引数でNAの処理方法を決めることができる
-df.assign(default_rank=lambda x: x['legs'].rank(method='average'))\
-    .assign(max_rank=lambda x: x['legs'].rank(method='max'))\
-    .assign(NA_bottom=lambda x: x['legs'].rank(na_option='bottom'))\
-    .assign(pct_rank=lambda x: x['legs'].rank(pct=True))
+# ＜ポイント＞
+# - qcut()は数値データをカテゴリカルの範囲データに変換する
+#   --- 分位変換の際は範囲データにラベルを付けることで対処する
 
 
-# 4 連続データの離散化 --------------------------------------------------------
+# 分位変換
+# --- 分位はカテゴリカルとして出力
+iris.assign(tile=lambda x: pd.qcut(x['sepal_length'], q=5, labels=range(1, 5+1)))
 
-# Seriesでビニング適用
-# --- CategoricalDtypeとして格納
-# --- 必要に応じて文字列変換
-bins = pd.cut(iris['sepal_length'], 3, labels=['low', 'median', 'high'])
-bins.dtype
-bins.astype('str')
+# 分位変換
+# --- 分位を文字列に変換
+iris.assign(tile=lambda x: 'F' + pd.qcut(x['sepal_length'], q=5, labels=range(1, 5+1)).astype(str))
 
-# 列のビニング適用
-# --- 数値範囲が3分位となるように変換
-iris[['sepal_length']]\
-    .assign(price_group=lambda x: pd.cut(x['sepal_length'], bins=3))\
-    .groupby('price_group')\
-    .count()\
-    .reset_index()
-
-# 列のビニング適用
-# --- 数値範囲が3分位となるように変換
-iris[['sepal_length']]\
-    .assign(price_group=lambda x: pd.qcut(x['sepal_length'], q=[0, 0.33, 0.66, 1], labels=['low', 'medium', 'high']))\
-    .groupby('price_group')\
-    .count()\
-    .reset_index()
+# ＜参考＞
+# qcut()の動作
+# --- ラベル指定なし
+pd.qcut(iris['sepal_length'], q=5)
 
 
-# 5 列のデータ変換 --------------------------------------------------------
+# 6 行番号の追加 --------------------------------------------------------------------
 
-# データ全体の集計
-# --- 文字列の列が含まれないようにする
-iris.select_dtypes("float")\
-    .transform(lambda x: (x - x.mean()) / x.std())
+# 数値番号を生成して追加
+iris.assign(row_number=lambda x: np.arange(x.shape[0]))
+
+# インデクスが行番号の場合
+iris.reset_index()
